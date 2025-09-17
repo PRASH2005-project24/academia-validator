@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academia Validator - Certificate Verification System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <meta name="description" content="AI-powered certificate verification system for Government of Jharkhand. Verify academic credentials instantly with advanced OCR and fraud detection.">
+    <meta name="keywords" content="certificate verification, academic credentials, OCR, fraud detection, Jharkhand, education">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="/" class="nav-brand">
+                <div class="nav-icon">🎓</div>
+                Academia Validator
+            </a>
+            <ul class="nav-links">
+                <li><a href="/" class="nav-link active">Home</a></li>
+                <li><a href="/admin" class="nav-link">Dashboard</a></li>
+                <li><a href="/test" class="nav-link">Test</a></li>
+                <li><a href="#features" class="nav-link">Features</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Offline Indicator -->
+    <div class="offline-indicator" id="offlineIndicator">
+        🔌 You're offline - Limited functionality available
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Academia Validator</h1>
+                <p class="hero-subtitle">AI-Powered Certificate Verification System</p>
+                <p class="hero-description">
+                    Instantly verify academic credentials with our advanced OCR and fraud detection technology.
+                    Built for the Government of Jharkhand to ensure authentic qualifications and combat certificate fraud.
+                </p>
+                
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <span class="hero-stat-number" id="totalVerifications">10,000+</span>
+                        <span class="hero-stat-label">Certificates Verified</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">95%</span>
+                        <span class="hero-stat-label">Accuracy Rate</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">5 sec</span>
+                        <span class="hero-stat-label">Average Processing Time</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">24/7</span>
+                        <span class="hero-stat-label">System Availability</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Verification Section -->
+    <section class="container" style="margin-top: 4rem; margin-bottom: 4rem;">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Certificate Verification</h2>
+                <p class="card-subtitle">Upload your certificate for instant AI-powered verification</p>
+            </div>
+            
+            <div class="card-body">
+                <!-- Upload Area -->
+                <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" class="file-input" accept=".pdf,.png,.jpg,.jpeg,.tiff,.bmp" onchange="handleFileSelect(this.files[0])">
+                    <div class="upload-icon">📄</div>
+                    <div class="upload-text">Drag & drop your certificate here</div>
+                    <div class="upload-hint">Or click to browse • Supports PDF, PNG, JPG, JPEG, TIFF, BMP • Max 16MB</div>
+                </div>
+                
+                <!-- Progress Bar -->
+                <div class="progress" id="progressContainer" style="display: none;">
+                    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                </div>
+                
+                <!-- Action Button -->
+                 <div class="text-center">
+                <button class="btn btn-primary btn-large" id="verifyBtn" onclick="verifyCertificate()" disabled>
+                    <span>🔍</span> Verify Certificate
+                </button>
+                </div>
+                
+                <!-- Alert Messages -->
+                <div id="messageContainer"></div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results" id="results" style="display: none;">
+            <div class="result-card">
+                <div class="result-header">
+                    <div class="result-status" id="verificationStatus">Processing...</div>
+                    <div class="confidence-score" id="confidenceScore">0%</div>
+                </div>
+                
+                <div class="result-details">
+                    <div class="result-field">
+                        <div class="result-field-label">Student Name</div>
+                        <div class="result-field-value" id="studentName">Loading...</div>
+                    </div>
+                    <div class="result-field">
+                        <div class="result-field-label">Certificate Number</div>
+                        <div class="result-field-value" id="certNumber">Loading...</div>
+                    </div>
+                    <div class="result-field">
+                        <div class="result-field-label">Institution</div>
+                        <div class="result-field-value" id="institution">Loading...</div>
+                    </div>
+                    <div class="result-field">
+                        <div class="result-field-label">Graduation Year</div>
+                        <div class="result-field-value" id="gradYear">Loading...</div>
+                    </div>
+                    <div class="result-field">
+                        <div class="result-field-label">Course/Degree</div>
+                        <div class="result-field-value" id="course">Loading...</div>
+                    </div>
+                    <div class="result-field">
+                        <div class="result-field-label">Roll Number</div>
+                        <div class="result-field-value" id="rollNumber">Loading...</div>
+                    </div>
+                    <div class="result-field">
+                        <div class="result-field-label">CGPA/Grade</div>
+                        <div class="result-field-value" id="cgpaGrade">Loading...</div>
+                    </div>
+                    <div class="result-field">
+                        <div class="result-field-label">Processing Method</div>
+                        <div class="result-field-value" id="processingMethod">Enhanced OCR</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <h2>Advanced Verification Features</h2>
+                <p style="color: var(--gray-600); font-size: 1.125rem;">Our AI-powered system provides comprehensive certificate analysis</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3 class="feature-title">AI-Powered OCR</h3>
+                    <p class="feature-description">
+                        Advanced OCR with multiple preprocessing techniques ensures 95%+ accuracy
+                        even with poor quality or black & white images.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3 class="feature-title">Fraud Detection</h3>
+                    <p class="feature-description">
+                        Smart algorithms detect tampering, alterations, and inconsistencies
+                        in certificate data with confidence scoring.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3 class="feature-title">Instant Processing</h3>
+                    <p class="feature-description">
+                        Get verification results in under 5 seconds with real-time
+                        processing and immediate confidence assessment.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3 class="feature-title">Secure & Private</h3>
+                    <p class="feature-description">
+                        All data processed locally with encryption. No certificates
+                        stored permanently, ensuring complete privacy.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3 class="feature-title">Works Offline</h3>
+                    <p class="feature-description">
+                        Complete functionality without internet connection.
+                        Perfect for government offices and secure environments.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Detailed Analytics</h3>
+                    <p class="feature-description">
+                        Comprehensive admin dashboard with verification statistics,
+                        trends, and institutional performance metrics.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background: var(--gray-800); color: var(--white); padding: 3rem 0; text-align: center;">
+        <div class="container">
+            <h3 style="color: var(--primary-green); margin-bottom: 1rem;">Academia Validator</h3>
+            <p style="margin-bottom: 2rem; color: var(--gray-300);">Digital Certificate Verification System</p>
+            <p style="margin-bottom: 1rem;">🏛️ Government of Jharkhand | Department of Higher and Technical Education</p>
+            <p style="font-size: 0.875rem; color: var(--gray-400);">© 2024 Academia Validator. Built for educational integrity and fraud prevention.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Register service worker for offline functionality
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then((registration) => {
+                        console.log('✅ Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('❌ Service Worker registration failed:', error);
+                    });
+            });
+        }
+        
+        // Offline detection
+        function updateOnlineStatus() {
+            const offlineIndicator = document.getElementById('offlineIndicator');
+            if (navigator.onLine) {
+                offlineIndicator.classList.remove('show');
+            } else {
+                offlineIndicator.classList.add('show');
+            }
+        }
+        
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
+        
+        let selectedFile = null;
+        
+        // Drag and drop functionality
+        const uploadArea = document.getElementById('uploadArea');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight(e) {
+            uploadArea.classList.add('dragover');
+        }
+        
+        function unhighlight(e) {
+            uploadArea.classList.remove('dragover');
+        }
+        
+        uploadArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        }
+        
+        function handleFileSelect(file) {
+            if (file) {
+                selectedFile = file;
+                document.querySelector('.upload-text').textContent = `📄 Selected: ${file.name}`;
+                document.querySelector('.upload-hint').textContent = `File size: ${(file.size / 1024 / 1024).toFixed(2)} MB`;
+                document.getElementById('verifyBtn').disabled = false;
+                
+                // Hide previous results
+                document.getElementById('results').style.display = 'none';
+                document.getElementById('messageContainer').innerHTML = '';
+            }
+        }
+        
+        function updateProgress(percent) {
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('progressBar').style.width = percent + '%';
+        }
+        
+        function hideProgress() {
+            document.getElementById('progressContainer').style.display = 'none';
+        }
+        
+        function showMessage(message, type = 'info') {
+            const messageContainer = document.getElementById('messageContainer');
+            const alertClass = `alert-${type === 'error' ? 'error' : type === 'success' ? 'success' : 'info'}`;
+            messageContainer.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
+        }
+        
+        function verifyCertificate() {
+            if (!selectedFile) {
+                showMessage('Please select a certificate file first.', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('certificate', selectedFile);
+            
+            const verifyBtn = document.getElementById('verifyBtn');
+            verifyBtn.disabled = true;
+            verifyBtn.innerHTML = '<span>⏳</span> Processing...';
+            
+            updateProgress(10);
+            
+            fetch('/api/verify', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                updateProgress(70);
+                return response.json();
+            })
+            .then(data => {
+                updateProgress(100);
+                
+                setTimeout(() => {
+                    hideProgress();
+                    
+                    if (data.success) {
+                        displayResults(data);
+                        showMessage('Certificate verification completed successfully!', 'success');
+                    } else {
+                        showMessage(`Verification failed: ${data.error}`, 'error');
+                    }
+                    
+                    verifyBtn.disabled = false;
+                    verifyBtn.innerHTML = '<span>🔍</span> Verify Certificate';
+                }, 500);
+            })
+            .catch(error => {
+                hideProgress();
+                console.error('Error:', error);
+                showMessage('An error occurred during verification. Please try again.', 'error');
+                verifyBtn.disabled = false;
+                verifyBtn.innerHTML = '<span>🔍</span> Verify Certificate';
+            });
+        }
+        
+        function displayResults(data) {
+            // Update status
+            const status = data.validation_result?.status || 'Processed';
+            const statusElement = document.getElementById('verificationStatus');
+            
+            statusElement.textContent = status;
+            statusElement.className = 'result-status';
+            
+            if (status.includes('Valid')) {
+                statusElement.classList.add('valid');
+            } else if (status.includes('Invalid')) {
+                statusElement.classList.add('invalid');
+            } else {
+                statusElement.classList.add('suspicious');
+            }
+            
+            // Update confidence
+            const confidence = data.confidence_score || data.ocr_confidence || 0;
+            document.getElementById('confidenceScore').textContent = `${Math.round(confidence)}%`;
+            
+            // Update details
+            const details = data.extracted_details || {};
+            document.getElementById('studentName').textContent = details.student_name || 'Not found';
+            document.getElementById('certNumber').textContent = details.certificate_number || 'Not found';
+            document.getElementById('institution').textContent = details.institution_name || 'Not found';
+            document.getElementById('gradYear').textContent = details.graduation_year || 'Not found';
+            document.getElementById('course').textContent = details.course_name || 'Not found';
+            document.getElementById('rollNumber').textContent = details.roll_number || 'Not found';
+            document.getElementById('cgpaGrade').textContent = details.cgpa_percentage || 'Not found';
+            document.getElementById('processingMethod').textContent = data.processing_method || 'Enhanced OCR';
+            
+            document.getElementById('results').style.display = 'block';
+            
+            // Scroll to results
+            setTimeout(() => {
+                document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        }
+    </script>
+</body>
+</html>

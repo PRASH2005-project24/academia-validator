@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academia Validator - Certificate Verification System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 0;
+        }
+        .upload-area {
+            border: 3px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .upload-area:hover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        .upload-area.dragover {
+            border-color: #007bff;
+            background-color: #e3f2fd;
+        }
+        .result-card {
+            border-left: 5px solid #007bff;
+        }
+        .status-valid {
+            border-left-color: #28a745 !important;
+            background-color: #d4edda;
+        }
+        .status-invalid {
+            border-left-color: #dc3545 !important;
+            background-color: #f8d7da;
+        }
+        .status-suspicious {
+            border-left-color: #ffc107 !important;
+            background-color: #fff3cd;
+        }
+        .confidence-bar {
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .confidence-fill {
+            height: 100%;
+            transition: width 1s ease-in-out;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .spinner-border {
+            width: 4rem;
+            height: 4rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-shield-alt"></i> Academia Validator
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin">Admin</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container text-center">
+            <h1 class="display-4 mb-4">Certificate Authenticity Validator</h1>
+            <p class="lead mb-4">
+                Verify the authenticity of academic certificates from Jharkhand institutions using 
+                advanced OCR and AI validation technology.
+            </p>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card bg-white text-dark">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-upload"></i> Upload Certificate
+                            </h5>
+                            <form id="verificationForm" enctype="multipart/form-data">
+                                <div class="upload-area" onclick="document.getElementById('certificateFile').click()">
+                                    <div id="uploadContent">
+                                        <i class="fas fa-cloud-upload-alt fa-3x mb-3 text-muted"></i>
+                                        <h4>Drop your certificate here or click to browse</h4>
+                                        <p class="text-muted">Supported formats: PDF, PNG, JPG, JPEG, TIFF, BMP (Max 16MB)</p>
+                                    </div>
+                                    <input type="file" id="certificateFile" name="certificate" 
+                                           accept=".pdf,.png,.jpg,.jpeg,.tiff,.bmp" style="display: none;">
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-lg mt-3" id="verifyBtn" disabled>
+                                    <i class="fas fa-search"></i> Verify Certificate
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="py-5" id="resultsSection" style="display: none;">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="card result-card" id="resultCard">
+                        <div class="card-body">
+                            <h4 class="card-title">
+                                <i class="fas fa-clipboard-check"></i> Verification Results
+                            </h4>
+                            <div id="resultContent"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-12">
+                    <h2 class="display-6">How It Works</h2>
+                    <p class="lead text-muted">Our advanced validation system ensures certificate authenticity</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 text-center mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <i class="fas fa-eye fa-3x text-primary mb-3"></i>
+                            <h5>OCR Analysis</h5>
+                            <p>Advanced optical character recognition extracts key details from certificates</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <i class="fas fa-database fa-3x text-primary mb-3"></i>
+                            <h5>Database Verification</h5>
+                            <p>Cross-reference with verified institutional records and certificate databases</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                            <h5>Security Check</h5>
+                            <p>AI-powered analysis detects tampering, forgery, and anomalies</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="text-center text-white">
+            <div class="spinner-border text-light" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h4 class="mt-3">Analyzing Certificate...</h4>
+            <p>Please wait while we verify your document</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container text-center">
+            <p>&copy; 2024 Academia Validator - Government of Jharkhand</p>
+            <p class="mb-0">Department of Higher and Technical Education</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('verificationForm');
+            const fileInput = document.getElementById('certificateFile');
+            const uploadArea = document.querySelector('.upload-area');
+            const verifyBtn = document.getElementById('verifyBtn');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const resultsSection = document.getElementById('resultsSection');
+            const resultCard = document.getElementById('resultCard');
+            const resultContent = document.getElementById('resultContent');
+
+            // File input change handler
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    const file = e.target.files[0];
+                    updateUploadArea(file);
+                    verifyBtn.disabled = false;
+                } else {
+                    resetUploadArea();
+                    verifyBtn.disabled = true;
+                }
+            });
+
+            // Drag and drop handlers
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    updateUploadArea(files[0]);
+                    verifyBtn.disabled = false;
+                }
+            });
+
+            // Form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (!fileInput.files.length) {
+                    alert('Please select a certificate file');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('certificate', fileInput.files[0]);
+
+                // Show loading overlay
+                loadingOverlay.style.display = 'flex';
+
+                fetch('/api/verify', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loadingOverlay.style.display = 'none';
+                    displayResults(data);
+                })
+                .catch(error => {
+                    loadingOverlay.style.display = 'none';
+                    console.error('Error:', error);
+                    alert('An error occurred during verification. Please try again.');
+                });
+            });
+
+            function updateUploadArea(file) {
+                document.getElementById('uploadContent').innerHTML = `
+                    <i class="fas fa-file fa-3x mb-3 text-success"></i>
+                    <h4>${file.name}</h4>
+                    <p class="text-muted">File size: ${formatFileSize(file.size)}</p>
+                    <small class="text-muted">Click to select a different file</small>
+                `;
+            }
+
+            function resetUploadArea() {
+                document.getElementById('uploadContent').innerHTML = `
+                    <i class="fas fa-cloud-upload-alt fa-3x mb-3 text-muted"></i>
+                    <h4>Drop your certificate here or click to browse</h4>
+                    <p class="text-muted">Supported formats: PDF, PNG, JPG, JPEG, TIFF, BMP (Max 16MB)</p>
+                `;
+            }
+
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            function displayResults(data) {
+                if (!data.success) {
+                    resultContent.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Error:</strong> ${data.error}
+                        </div>
+                    `;
+                    resultsSection.style.display = 'block';
+                    return;
+                }
+
+                const validation = data.validation_result;
+                const status = validation.status.toLowerCase().replace(' ', '-');
+                
+                resultCard.className = `card result-card status-${status}`;
+                
+                const confidenceColor = getConfidenceColor(validation.confidence_score);
+                
+                let statusIcon = 'fas fa-question-circle';
+                let statusClass = 'text-secondary';
+                
+                switch (validation.status) {
+                    case 'Valid':
+                    case 'Likely Valid':
+                        statusIcon = 'fas fa-check-circle';
+                        statusClass = 'text-success';
+                        break;
+                    case 'Invalid':
+                        statusIcon = 'fas fa-times-circle';
+                        statusClass = 'text-danger';
+                        break;
+                    case 'Suspicious':
+                    case 'Not Found':
+                        statusIcon = 'fas fa-exclamation-circle';
+                        statusClass = 'text-warning';
+                        break;
+                }
+
+                resultContent.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5><i class="${statusIcon} ${statusClass}"></i> Verification Status</h5>
+                            <h3 class="${statusClass}">${validation.status}</h3>
+                            
+                            <h6 class="mt-4">Confidence Score</h6>
+                            <div class="confidence-bar mb-2">
+                                <div class="confidence-fill bg-${confidenceColor}" 
+                                     style="width: ${validation.confidence_score}%"></div>
+                            </div>
+                            <p class="text-muted">${validation.confidence_score.toFixed(1)}%</p>
+
+                            ${validation.issues.length > 0 ? `
+                                <h6 class="mt-4">Issues Detected</h6>
+                                <ul class="list-unstyled">
+                                    ${validation.issues.map(issue => `<li><i class="fas fa-exclamation-triangle text-warning"></i> ${issue}</li>`).join('')}
+                                </ul>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-info-circle"></i> Extracted Details</h5>
+                            <table class="table table-sm">
+                                <tbody>
+                                    ${Object.entries(data.extracted_details).map(([key, value]) => {
+                                        if (value) {
+                                            const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                                            return `<tr><td><strong>${displayKey}:</strong></td><td>${value}</td></tr>`;
+                                        }
+                                        return '';
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                            
+                            ${validation.details && Object.keys(validation.details).length > 0 ? `
+                                <h6 class="mt-4">Database Match Details</h6>
+                                <table class="table table-sm">
+                                    <tbody>
+                                        ${Object.entries(validation.details).map(([key, value]) => {
+                                            if (value && !key.includes('score')) {
+                                                const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                                                return `<tr><td><strong>${displayKey}:</strong></td><td>${value}</td></tr>`;
+                                            }
+                                            return '';
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Verification ID:</strong> ${validation.verification_log || 'N/A'} | 
+                            <strong>Timestamp:</strong> ${new Date(data.timestamp).toLocaleString()}
+                        </small>
+                    </div>
+                `;
+
+                resultsSection.style.display = 'block';
+                resultsSection.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            function getConfidenceColor(score) {
+                if (score >= 80) return 'success';
+                if (score >= 60) return 'warning';
+                return 'danger';
+            }
+        });
+    </script>
+</body>
+</html>
